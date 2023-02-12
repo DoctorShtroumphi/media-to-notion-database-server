@@ -1,15 +1,16 @@
 require('dotenv').config()
 const express = require('express');
 const app = express();
-require('express-async-errors');
 const notion = require('./notion.js');
+const cors = require('cors')
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cors());
 
 var movieRouter = express.Router();
 
-movieRouter.get("/getAllSelectOptions", (req, res) => { 
-  notion.getAllSelectOptions().then(response => {
+movieRouter.get("/getAllMovieSelectOptions", (req, res) => {
+  notion.getAllMovieSelectOptions().then(response => {
     res.send(response);
   });
 });

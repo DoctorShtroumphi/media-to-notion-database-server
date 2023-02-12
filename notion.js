@@ -2,31 +2,7 @@ const { Client } = require("@notionhq/client");
 
 const notion = new Client({ auth: process.env.NOTION_API_KEY });
 
-async function getAllSelectOptions() {
-  const database = await notion.databases.retrieve({ database_id: process.env.NOTION_MOVIE_DATABASE_ID })
-
-  return {
-    genres: notionPropertiesById(database.properties)[process.env.MOVIE_GENRE_ID].multi_select.options.map(option => {
-      return { id: option.id, name: option.name };
-    }),
-    ratings: notionPropertiesById(database.properties)[process.env.MOVIE_RATING_ID].select.options.map(option => {
-      return { id: option.id, name: option.name };
-    }),
-    scareFactors: notionPropertiesById(database.properties)[process.env.MOVIE_SCARE_FACTOR_ID].select.options.map(option => {
-      return { id: option.id, name: option.name };
-    }),
-    franchises: notionPropertiesById(database.properties)[process.env.MOVIE_FRANCHISE_ID].select.options.map(option => {
-      return { id: option.id, name: option.name };
-    })
-  }
-}
-
-function notionPropertiesById(properties) {
-  return Object.values(properties).reduce((obj, property) => {
-    const { id, ...rest } = property;
-    return { ...obj, [id]: rest };
-  }, {});
-}
+// Movie methods
 
 async function createUnwatchedMovieFromRequestBody(body) {
   if (!body.hasOwnProperty("franchise")) {
@@ -279,8 +255,55 @@ async function createWatchedMovie({ title, genres, year, runTime, rewatch, ratin
   }
 }
 
+async function getAllMovieSelectOptions() {
+  const database = await notion.databases.retrieve({ database_id: process.env.NOTION_MOVIE_DATABASE_ID })
+
+  return {
+    genres: notionPropertiesById(database.properties)[process.env.MOVIE_GENRE_ID].multi_select.options.map(option => {
+      return { id: option.id, name: option.name };
+    }),
+    ratings: notionPropertiesById(database.properties)[process.env.MOVIE_RATING_ID].select.options.map(option => {
+      return { id: option.id, name: option.name };
+    }),
+    scareFactors: notionPropertiesById(database.properties)[process.env.MOVIE_SCARE_FACTOR_ID].select.options.map(option => {
+      return { id: option.id, name: option.name };
+    }),
+    franchises: notionPropertiesById(database.properties)[process.env.MOVIE_FRANCHISE_ID].select.options.map(option => {
+      return { id: option.id, name: option.name };
+    })
+  }
+}
+
+function notionPropertiesById(properties) {
+  return Object.values(properties).reduce((obj, property) => {
+    const { id, ...rest } = property;
+    return { ...obj, [id]: rest };
+  }, {});
+}
+
+// TV Show methods
+
+async function getAllTVShowSelectOptions() {
+  const database = await notion.databases.retrieve({ database_id: process.env.NOTION_MOVIE_DATABASE_ID })
+
+  return {
+    genres: notionPropertiesById(database.properties)[process.env.MOVIE_GENRE_ID].multi_select.options.map(option => {
+      return { id: option.id, name: option.name };
+    }),
+    ratings: notionPropertiesById(database.properties)[process.env.MOVIE_RATING_ID].select.options.map(option => {
+      return { id: option.id, name: option.name };
+    }),
+    scareFactors: notionPropertiesById(database.properties)[process.env.MOVIE_SCARE_FACTOR_ID].select.options.map(option => {
+      return { id: option.id, name: option.name };
+    }),
+    franchises: notionPropertiesById(database.properties)[process.env.MOVIE_FRANCHISE_ID].select.options.map(option => {
+      return { id: option.id, name: option.name };
+    })
+  }
+}
+
 module.exports = {
   createUnwatchedMovieFromRequestBody,
   createWatchedMovieFromRequestBody,
-  getAllSelectOptions
+  getAllMovieSelectOptions
 }
