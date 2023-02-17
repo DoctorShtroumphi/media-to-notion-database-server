@@ -1,19 +1,19 @@
-const { Client } = require("@notionhq/client");
+const { Client } = require('@notionhq/client');
 
 const notion = new Client({ auth: process.env.NOTION_API_KEY });
 
 // Movie methods
 
 async function createUnwatchedMovieFromRequestBody(body) {
-  if (!body.hasOwnProperty("franchise")) {
+  if (!body.hasOwnProperty('franchise')) {
     body.franchise = undefined;
   }
 
-  if (!body.hasOwnProperty("chronological")) {
+  if (!body.hasOwnProperty('chronological')) {
     body.chronological = undefined;
   }
 
-  if (!body.hasOwnProperty("release")) {
+  if (!body.hasOwnProperty('release')) {
     body.release = undefined;
   }
 
@@ -120,19 +120,19 @@ async function createUnwatchedMovie({ title, genres, year, runTime, franchise, c
 }
 
 async function createWatchedMovieFromRequestBody(body) {
-  if (!body.hasOwnProperty("scareFactor")) {
+  if (!body.hasOwnProperty('scareFactor')) {
     body.scareFactor = undefined;
   }
 
-  if (!body.hasOwnProperty("franchise")) {
+  if (!body.hasOwnProperty('franchise')) {
     body.franchise = undefined;
   }
 
-  if (!body.hasOwnProperty("chronological")) {
+  if (!body.hasOwnProperty('chronological')) {
     body.chronological = undefined;
   }
 
-  if (!body.hasOwnProperty("release")) {
+  if (!body.hasOwnProperty('release')) {
     body.release = undefined;
   }
 
