@@ -10,7 +10,7 @@ app.use(cors());
 var movieRouter = express.Router();
 
 movieRouter.get('/getAllMovieSelectOptions', (req, res) => {
-  notion.getAllMovieSelectOptions().then(response => {
+  notion.getAllMovieSelectOptions().then((response) => {
     res.send(response);
   });
 });

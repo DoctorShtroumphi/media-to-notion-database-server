@@ -194,6 +194,11 @@ async function createWatchedMovie({ title, genres, year, runTime, rewatch, ratin
             id: rating.id
           }
         },
+        [process.env.MOVIE_FRANCHISE_ID]: {
+          select: {
+            name: franchise.name
+          }
+        },
         [process.env.MOVIE_POSTER_ID]: {
           files: [
             {
@@ -208,26 +213,12 @@ async function createWatchedMovie({ title, genres, year, runTime, rewatch, ratin
       }
     }
 
-    if (scareFactor) {
+    if (scareFactor.id) {
       movie.properties[process.env.MOVIE_SCARE_FACTOR_ID] = {
         select: {
           id: scareFactor.id
         }
       };
-    }
-
-    if (franchise) {
-      movie.properties[process.env.MOVIE_FRANCHISE_ID] = {
-        select: {
-          name: franchise.name
-        }
-      };
-    } else {
-      movie.properties[process.env.MOVIE_FRANCHISE_ID] = {
-        select: {
-          name: 'None'
-        }
-      }
     }
 
     if (chronological || chronological === 0) {
@@ -248,10 +239,10 @@ async function createWatchedMovie({ title, genres, year, runTime, rewatch, ratin
   
   try {
     await notion.pages.create(movie);
-    return true;
+    return { result: true, message: "Added to Notion database!" };
   } catch (e) {
     console.log(e.message);
-    return { result: false, error_message: e.message };
+    return { result: false, message: "The following error occured: " + e.message };
   }
 }
 
