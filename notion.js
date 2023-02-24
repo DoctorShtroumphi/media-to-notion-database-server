@@ -106,7 +106,7 @@ async function createUnwatchedMovie({ title, genres, year, runTime, franchise, c
       }
     }
   } catch (e) {
-    console.log(e.message);
+    console.error(e.message);
     return false;
   }
 
@@ -114,7 +114,7 @@ async function createUnwatchedMovie({ title, genres, year, runTime, franchise, c
     await notion.pages.create(movie);
     return true;
   } catch (e) {
-    console.log(e.message);
+    console.error(e.message);
     return { result: false, error_message: e.message };
   }
 }
@@ -136,9 +136,15 @@ async function createWatchedMovieFromRequestBody(body) {
     body.release = undefined;
   }
 
-  return await createWatchedMovie({ title: body.title, genres: body.genres, year: body.year, 
-    runTime: body.runTime, rewatch: body.rewatch, rating: body.rating, scareFactor: body.scareFactor,
-    franchise: body.franchise, chronological: body.chronological, release: body.release, poster: body.poster });
+  if (await doesMovieExist(body.title, body.year)) {
+    return { result: false, message: "This movie is already in the database." };
+  } else {
+    return await createWatchedMovie({
+      title: body.title, genres: body.genres, year: body.year,
+      runTime: body.runTime, rewatch: body.rewatch, rating: body.rating, scareFactor: body.scareFactor,
+      franchise: body.franchise, chronological: body.chronological, release: body.release, poster: body.poster
+    });
+  }
 }
 
 async function createWatchedMovie({ title, genres, year, runTime, rewatch, rating, scareFactor, franchise, chronological, release, poster }) {
@@ -233,16 +239,44 @@ async function createWatchedMovie({ title, genres, year, runTime, rewatch, ratin
       }
     }
   } catch (e) {
-    console.log(e.message);
-    return false;
+    console.error(e.message);
+    return { result: false, message: "The following error occured: " + e.message };
   }
   
   try {
     await notion.pages.create(movie);
     return { result: true, message: "Added to Notion database!" };
   } catch (e) {
-    console.log(e.message);
+    console.error(e.message);
     return { result: false, message: "The following error occured: " + e.message };
+  }
+}
+
+async function doesMovieExist(title, year) {
+  try {
+    const response = await notion.databases.query({
+      database_id: process.env.NOTION_MOVIE_DATABASE_ID,
+      filter: {
+        and: [
+          {
+            property: 'Title',
+            title: {
+              equals: title
+            }
+          },
+          {
+            property: 'Year',
+            rich_text: {
+              equals: year
+            }
+          }
+        ]
+      }
+    });
+
+    return response.results.length > 0;
+  } catch (error) {
+    console.error(error);
   }
 }
 
@@ -273,25 +307,6 @@ function notionPropertiesById(properties) {
 }
 
 // TV Show methods
-
-async function getAllTVShowSelectOptions() {
-  const database = await notion.databases.retrieve({ database_id: process.env.NOTION_MOVIE_DATABASE_ID })
-
-  return {
-    genres: notionPropertiesById(database.properties)[process.env.MOVIE_GENRE_ID].multi_select.options.map(option => {
-      return { id: option.id, name: option.name };
-    }),
-    ratings: notionPropertiesById(database.properties)[process.env.MOVIE_RATING_ID].select.options.map(option => {
-      return { id: option.id, name: option.name };
-    }),
-    scareFactors: notionPropertiesById(database.properties)[process.env.MOVIE_SCARE_FACTOR_ID].select.options.map(option => {
-      return { id: option.id, name: option.name };
-    }),
-    franchises: notionPropertiesById(database.properties)[process.env.MOVIE_FRANCHISE_ID].select.options.map(option => {
-      return { id: option.id, name: option.name };
-    })
-  }
-}
 
 module.exports = {
   createUnwatchedMovieFromRequestBody,
