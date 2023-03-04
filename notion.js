@@ -17,8 +17,14 @@ async function createUnwatchedMovieFromRequestBody(body) {
     body.release = undefined;
   }
 
-  return await createUnwatchedMovie({ title: body.title, genres: body.genres, year: body.year, runTime: body.runTime, 
-    franchise: body.franchise, chronological: body.chronological, release: body.release, poster: body.poster });
+  if (await doesMovieExist(body.title, body.year)) {
+    return { result: false, message: "This movie is already in the database." };
+  } else {
+    return await createUnwatchedMovie({
+      title: body.title, genres: body.genres, year: body.year, runTime: body.runTime,
+      franchise: body.franchise, chronological: body.chronological, release: body.release, poster: body.poster
+    });
+  }
 }
 
 async function createUnwatchedMovie({ title, genres, year, runTime, franchise, chronological, release, poster }) {
@@ -28,9 +34,6 @@ async function createUnwatchedMovie({ title, genres, year, runTime, franchise, c
         database_id: process.env.NOTION_MOVIE_DATABASE_ID
       },
       properties: {
-        [process.env.MOVIE_WATCHED_ID]: {
-          checkbox: false
-        },
         [process.env.MOVIE_TITLE_ID]: {
           title: [
             {
@@ -66,6 +69,11 @@ async function createUnwatchedMovie({ title, genres, year, runTime, franchise, c
             }
           ]
         },
+        [process.env.MOVIE_FRANCHISE_ID]: {
+          select: {
+            name: franchise.name
+          }
+        },
         [process.env.MOVIE_POSTER_ID]: {
           files: [
             {
@@ -79,20 +87,6 @@ async function createUnwatchedMovie({ title, genres, year, runTime, franchise, c
         }
       }
     };
-    
-    if (franchise) {
-      movie.properties[process.env.MOVIE_FRANCHISE_ID] = {
-        select: {
-          name: franchise.name
-        }
-      };
-    } else {
-      movie.properties[process.env.MOVIE_FRANCHISE_ID] = {
-        select: {
-          name: 'None'
-        }
-      }
-    }
 
     if (chronological || chronological === 0) {
       movie.properties[process.env.MOVIE_CHRONOLOGICAL_ID] = {
@@ -107,15 +101,15 @@ async function createUnwatchedMovie({ title, genres, year, runTime, franchise, c
     }
   } catch (e) {
     console.error(e.message);
-    return false;
+    return { result: false, message: "The following error occured: " + e.message };
   }
 
   try {
     await notion.pages.create(movie);
-    return true;
+    return { result: true, message: "Unwatched movie added to Notion database!" };
   } catch (e) {
     console.error(e.message);
-    return { result: false, error_message: e.message };
+    return { result: false, message: "The following error occured: " + e.message };
   }
 }
 
@@ -140,9 +134,9 @@ async function createWatchedMovieFromRequestBody(body) {
     return { result: false, message: "This movie is already in the database." };
   } else {
     return await createWatchedMovie({
-      title: body.title, genres: body.genres, year: body.year,
-      runTime: body.runTime, rewatch: body.rewatch, rating: body.rating, scareFactor: body.scareFactor,
-      franchise: body.franchise, chronological: body.chronological, release: body.release, poster: body.poster
+      title: body.title, genres: body.genres, year: body.year, runTime: body.runTime, rewatch: body.rewatch,
+      rating: body.rating, scareFactor: body.scareFactor, franchise: body.franchise,
+      chronological: body.chronological, release: body.release, poster: body.poster
     });
   }
 }
@@ -224,7 +218,7 @@ async function createWatchedMovie({ title, genres, year, runTime, rewatch, ratin
         select: {
           id: scareFactor.id
         }
-      };
+      }
     }
 
     if (chronological || chronological === 0) {
@@ -245,7 +239,7 @@ async function createWatchedMovie({ title, genres, year, runTime, rewatch, ratin
   
   try {
     await notion.pages.create(movie);
-    return { result: true, message: "Added to Notion database!" };
+    return { result: true, message: "Watched movie added to Notion database!" };
   } catch (e) {
     console.error(e.message);
     return { result: false, message: "The following error occured: " + e.message };
